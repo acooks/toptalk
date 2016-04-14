@@ -53,13 +53,12 @@ void print_top_n(int stop)
 	char ip6_src[40];
 	char ip6_dst[40];
 
-#if 0
+	attron(A_STANDOUT);
 	mvprintw(TOP_N_LINE_OFFSET, 0,
-	         "%15s:%-6s %15s    %15s:%-6s  %10s",
-	         "Source", "port", "bytes", "Destination", "port", "proto");
-#endif
-	mvprintw(TOP_N_LINE_OFFSET + row++, 0, "Top Flows:");
-
+	         "%s:%-6s %15s    %18s:%-6s  %12s",
+	         "Source", "port", "bytes", "Destination", "port", "protocol");
+	attroff(A_STANDOUT);
+	
 	/* Clear the table */
 	for (int i = 1; i <= 15; i++) {
 		mvprintw(TOP_N_LINE_OFFSET + i, 0, "%80s", " ");
@@ -83,12 +82,11 @@ void print_top_n(int stop)
 
 		switch (r->flow.ethertype) {
 		case ETHERTYPE_IP:
-			mvprintw(TOP_N_LINE_OFFSET + row++, 0, "%39s->%-39s",
-			         ip_src, ip_dst);
-			mvprintw(TOP_N_LINE_OFFSET + row++, 0,
-			         "%-5s %10d %5d %4s %6d->%-6d",
-			         protos[r->flow.proto], r->len, st_table_entry->len, " ",
-			         r->flow.sport, r->flow.dport);
+
+			mvprintw(TOP_N_LINE_OFFSET + row++, 0, "%s:%d \t%5d \t\t%s:%d \t%s",
+				 ip_src, r->flow.sport, r->len, ip_dst,
+				 r->flow.dport, protos[r->flow.proto]);
+
 			mvprintw(TOP_N_LINE_OFFSET + row++, 0, "%80s", " ");
 			break;
 
@@ -316,7 +314,11 @@ int main(int argc, char *argv[])
 	}
 
 	init_curses();
-	mvprintw(0, 0, "Device: %s\n", dev);
+	move(0, 0);
+	printw("Device: ");
+	attron(A_BOLD);
+	printw("%s\n", dev);
+	attroff(A_BOLD);
 
 	grab_packets(selectable_fd, handle);
 
